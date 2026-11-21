@@ -1,3 +1,4 @@
+
 package ua.opnu;
 
 import ua.opnu.util.Customer;
@@ -6,6 +7,7 @@ import ua.opnu.util.Order;
 import ua.opnu.util.Product;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class HardTasks {
 
@@ -16,13 +18,15 @@ public class HardTasks {
     public static void main(String[] args) {
         HardTasks tasks = new HardTasks();
 
-        // Для того, щоб побачити в консолі результат роботи методу, разкоментуйте відповідний рядок коду
+        // Для того, щоб побачити в консолі результат роботи методу, розкоментуйте відповідний рядок коду
 
         // Завдання 1
-        Objects.requireNonNull(tasks.getBooksWithPrice(),"Method getBooksWithPrice() returns null").forEach(System.out::println);
+        Objects.requireNonNull(tasks.getBooksWithPrice(),
+                "Method getBooksWithPrice() returns null").forEach(System.out::println);
 
         // Завдання 2
-        Objects.requireNonNull(tasks.getOrdersWithBabyProducts(),"Method getOrdersWithBabyProducts() returns null").forEach(System.out::println);
+        Objects.requireNonNull(tasks.getOrdersWithBabyProducts(),
+                "Method getOrdersWithBabyProducts() returns null").forEach(System.out::println);
 
         // Завдання 3
         // Objects.requireNonNull(tasks.applyDiscountToToys(),"Method applyDiscountToToys() returns null").forEach(System.out::println);
@@ -46,17 +50,20 @@ public class HardTasks {
 
     public List<Product> getBooksWithPrice() {
         // Метод повинен повертати товари з id 7, 9, 16, 17, 24
-        // TODO: напишіть вміст методу згідно умовам для того, щоб пройти тести
-        return products.stream().filter(s -> s.getCategory().equals("Books")).filter(s-> s.getPrice() > 100).toList();
+        return products.stream()
+                .filter(p -> p.getCategory().equals("Books"))
+                .filter(p -> p.getPrice() > 100)
+                .toList();
     }
 
     public List<Order> getOrdersWithBabyProducts() {
-
         // Метод повинен повертати замовлення з id 3, 4, 7, 8, 9, 10, 11, 14, 16, 17, 19,
         // 20, 27, 28, 29, 30, 32, 34, 37, 38, 40, 44, 45, 47, 48, 50
 
-        // TODO: напишіть вміст методу згідно умовам для того, щоб пройти тести
-        return null;
+        return orders.stream()
+                .filter(o -> o.getProducts().stream()
+                        .anyMatch(p -> p.getCategory().equals("Baby")))
+                .toList();
     }
 
     public List<Product> applyDiscountToToys() {
@@ -76,32 +83,42 @@ public class HardTasks {
         // id=30 price=455.73
         // endregion
 
-        // TODO: напишіть вміст методу згідно умовам для того, щоб пройти тести
-        return null;
+        List<Product> toys = products.stream()
+                .filter(p -> p.getCategory().equals("Toys"))
+                .toList();
+
+        toys.forEach(p -> p.setPrice(p.getPrice() * 0.5));
+
+        return toys;
     }
 
     public Optional<Product> getCheapestBook() {
 
         // товар з id = 17
 
-        // TODO: напишіть вміст методу згідно умовам для того, щоб пройти тести
-        return null;
+        return products.stream()
+                .filter(p -> p.getCategory().equals("Books"))
+                .min(Comparator.comparing(Product::getPrice));
     }
 
     public List<Order> getRecentOrders() {
 
         // id замовлень 23, 30, 33
 
-        // TODO: напишіть вміст методу згідно умовам для того, щоб пройти тести
-        return null;
+        return orders.stream()
+                .sorted(Comparator.comparing(Order::getOrderDate).reversed())
+                .limit(3)
+                .toList();
     }
 
     public DoubleSummaryStatistics getBooksStats() {
 
         // count = 5, average = 607.880000, max = 893.440000, min = 240.580000, sum = 3039.400000
 
-        // TODO: напишіть вміст методу згідно умовам для того, щоб пройти тести
-        return null;
+        return products.stream()
+                .filter(p -> p.getCategory().equals("Books"))
+                .mapToDouble(Product::getPrice)
+                .summaryStatistics();
     }
 
     public Map<Integer, Integer> getOrdersProductsMap() {
@@ -159,8 +176,11 @@ public class HardTasks {
         // 50 : 2
         // endregion
 
-        // TODO: напишіть вміст методу згідно умовам для того, щоб пройти тести
-        return null;
+        return orders.stream()
+                .collect(Collectors.toMap(
+                        Order::getId,
+                        o -> o.getProducts().size()
+                ));
     }
 
     public Map<String, List<Integer>> getProductsByCategory() {
@@ -173,8 +193,13 @@ public class HardTasks {
         // Books : [7, 9, 16, 17, 24]
         // endregion
 
-        // TODO: напишіть вміст методу згідно умовам для того, щоб пройти тести
-        return null;
+        return products.stream()
+                .collect(Collectors.groupingBy(
+                        Product::getCategory,
+                        Collectors.mapping(
+                                Product::getId,
+                                Collectors.toList()
+                        )
+                ));
     }
-
 }
